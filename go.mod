@@ -1,4 +1,4 @@
-module github.com/org/justaddpower-driver
+module github.com/byuoitav/justaddpower-driver
 
 go 1.13
 
