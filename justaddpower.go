@@ -92,11 +92,10 @@ func justAddPowerRequest(url string, body string, method string) ([]byte, error)
 func checkTransmitterChannel(address string) {
 	channel, err := getTransmissionChannelforAddress(address)
 
-	ipAddress, err2 := net.ResolveIPAddr("ip", address)
-	ipAddress.IP = ipAddress.IP.To4()
-
+	ipAddresses, err2 := net.LookupIP(address)
+	ipAddress := ipAddresses[0]
 	if err == nil && err2 == nil {
-		if string(ipAddress.IP[3]) == channel {
+		if string(ipAddress[3]) == channel {
 			//we're good
 			return
 		}
@@ -104,8 +103,8 @@ func checkTransmitterChannel(address string) {
 	setTransmitterChannelForAddress(address)
 }
 func setTransmitterChannelForAddress(transmitter string) (string, error) {
-	ipAddress, err := net.ResolveIPAddr("ip", transmitter)
-	ipAddress.IP = ipAddress.IP.To4()
+	ipAddresses, err := net.LookupIP(transmitter)
+	ipAddress := ipAddresses[0]
 
 	if err != nil {
 		return "", fmt.Errorf("Error when resolving IP Address [%s]: %w", transmitter, err)
@@ -113,7 +112,7 @@ func setTransmitterChannelForAddress(transmitter string) (string, error) {
 
 	log.L.Debugf("Setting transmitter ipaddr %v", ipAddress)
 
-	channel := fmt.Sprintf("%v", ipAddress.IP[3])
+	channel := fmt.Sprintf("%v", ipAddress[3])
 
 	log.L.Debugf("Setting transmitter channel %+v", channel)
 
@@ -131,10 +130,10 @@ func setTransmitterChannelForAddress(transmitter string) (string, error) {
 func getTransmissionChannelforAddress(address string) (string, error) {
 	log.L.Debugf("Getting transmitter channel for address %v", address)
 
-	ipAddress, err := net.ResolveIPAddr("ip", address)
-	ipAddress.IP = ipAddress.IP.To4()
+	ipAddresses, err := net.LookupIP(address)
+	ipAddress := ipAddresses[0]
 
-	log.L.Debugf("%+v", ipAddress.IP)
+	log.L.Debugf("%+v", ipAddress)
 
 	if err != nil {
 		return "", fmt.Errorf("Error when resolving IP Address [%s]", address)
@@ -154,20 +153,20 @@ func getTransmissionChannelforAddress(address string) (string, error) {
 		return "", fmt.Errorf("Error when unmarshaling response: %w", gerr)
 	}
 	log.L.Debugf("Result %s %v", result, jsonResult)
-	log.L.Debugf("len of IP %v", len(ipAddress.IP))
+	log.L.Debugf("len of IP %v", len(ipAddress))
 
 	transmissionChannel := fmt.Sprintf("%v.%v.%v.%v",
-		ipAddress.IP[0], ipAddress.IP[1], ipAddress.IP[2], jsonResult.Data)
+		ipAddress[0], ipAddress[1], ipAddress[2], jsonResult.Data)
 
 	return transmissionChannel, nil
 }
 
 // GetInput returns the current input
 func (j *JustAddPowerReciever) GetInputByOutput(ctx context.Context, output string) (string, error) {
-	ipAddress, err := net.ResolveIPAddr("ip", j.Address)
-	ipAddress.IP = ipAddress.IP.To4()
+	ipAddresses, err := net.LookupIP(j.Address)
+	ipAddress := ipAddresses[0]
 
-	log.L.Debugf("%+v", ipAddress.IP)
+	log.L.Debugf("%+v", ipAddress)
 
 	if err != nil {
 		return "", fmt.Errorf("Error when resolving IP Address [%s]: %w", j.Address, err)
@@ -188,10 +187,10 @@ func (j *JustAddPowerReciever) GetInputByOutput(ctx context.Context, output stri
 	}
 
 	log.L.Debugf("Result %s %v", result, jsonResult)
-	log.L.Debugf("len of IP %v", len(ipAddress.IP))
+	log.L.Debugf("len of IP %v", len(ipAddress))
 
 	transmissionChannel := fmt.Sprintf("%v.%v.%v.%v",
-		ipAddress.IP[0], ipAddress.IP[1], ipAddress.IP[2], jsonResult.Data)
+		ipAddress[0], ipAddress[1], ipAddress[2], jsonResult.Data)
 
 	return transmissionChannel, nil
 }
@@ -205,14 +204,13 @@ func (j *JustAddPowerReciever) SetInputByOutput(ctx context.Context, output, inp
 
 	log.L.Debugf("Routing %v to %s", j.Address, input)
 
-	ipAddress, err := net.ResolveIPAddr("ip", input)
-	ipAddress.IP = ipAddress.IP.To4()
-
+	ipAddresses, err := net.LookupIP(input)
+	ipAddress := ipAddresses[0]
 	if err != nil {
 		return fmt.Errorf("Error when resolving IP Address [%s]: %w", input, err)
 	}
 
-	channel := fmt.Sprintf("%v", ipAddress.IP[3])
+	channel := fmt.Sprintf("%v", ipAddress[3])
 
 	log.L.Debugf("Channel %v", channel)
 
