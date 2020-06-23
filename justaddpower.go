@@ -201,7 +201,7 @@ func (j *JustAddPowerReciever) GetAudioVideoInputs(ctx context.Context) (map[str
 
 // SwitchInput changes the input on the given output to input (Just add power transmitter - ipaddr)
 // We don't need the output necessarily because the reciever is the output
-func (j *JustAddPowerReciever) SetInput(ctx context.Context, output, input string) error {
+func (j *JustAddPowerReciever) SetAudioVideoInput(ctx context.Context, output, input string) error {
 	log.L.Debugf("Setting receiver to transmitter")
 
 	go checkTransmitterChannel(input)
