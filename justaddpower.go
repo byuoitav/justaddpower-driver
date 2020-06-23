@@ -162,29 +162,31 @@ func getTransmissionChannelforAddress(address string) (string, error) {
 	return transmissionChannel, nil
 }
 
-// GetInput returns the current input
-func (j *JustAddPowerReciever) GetInputByOutput(ctx context.Context, output string) (string, error) {
+// GetAudioVideoInputs returns the current input
+func (j *JustAddPowerReciever) GetAudioVideoInputs(ctx context.Context) (map[string]string, error) {
+	toReturn := make(map[string]string)
+
 	ipAddress, err := net.ResolveIPAddr("ip", j.Address)
 	ipAddress.IP = ipAddress.IP.To4()
 
 	log.L.Debugf("%+v", ipAddress.IP)
 
 	if err != nil {
-		return "", fmt.Errorf("Error when resolving IP Address [%s]: %w", j.Address, err)
+		return toReturn, fmt.Errorf("Error when resolving IP Address [%s]: %w", j.Address, err)
 	}
 
 	result, err := justAddPowerRequest(fmt.Sprintf("http://%s/cgi-bin/api/details/channel", j.Address), "", "GET")
 
 	if err != nil {
 		log.L.Debugf("%v", err)
-		return "", fmt.Errorf("error when making request: %w", err)
+		return toReturn, fmt.Errorf("error when making request: %w", err)
 	}
 
 	var jsonResult JustAddPowerChannelIntResult
 	gerr := json.Unmarshal(result, &jsonResult)
 	if gerr != nil {
 		log.L.Debugf("%v", gerr)
-		return "", fmt.Errorf("error when unmarshaling response: %w", gerr)
+		return toReturn, fmt.Errorf("error when unmarshaling response: %w", gerr)
 	}
 
 	log.L.Debugf("Result %s %v", result, jsonResult)
@@ -193,12 +195,13 @@ func (j *JustAddPowerReciever) GetInputByOutput(ctx context.Context, output stri
 	transmissionChannel := fmt.Sprintf("%v.%v.%v.%v",
 		ipAddress.IP[0], ipAddress.IP[1], ipAddress.IP[2], jsonResult.Data)
 
-	return transmissionChannel, nil
+	toReturn[""] = transmissionChannel
+	return toReturn, nil
 }
 
 // SwitchInput changes the input on the given output to input (Just add power transmitter - ipaddr)
 // We don't need the output necessarily because the reciever is the output
-func (j *JustAddPowerReciever) SetInputByOutput(ctx context.Context, output, input string) error {
+func (j *JustAddPowerReciever) SetInput(ctx context.Context, output, input string) error {
 	log.L.Debugf("Setting receiver to transmitter")
 
 	go checkTransmitterChannel(input)
@@ -229,9 +232,8 @@ func (j *JustAddPowerReciever) SetInputByOutput(ctx context.Context, output, inp
 
 	if err != nil {
 		return fmt.Errorf("Error when unpacking json")
-	} else {
-		return nil
 	}
+	return nil
 }
 
 // GetHardwareInfo returns a hardware info struct
